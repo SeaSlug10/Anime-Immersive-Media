@@ -32,7 +32,7 @@ def update_img():
     cover_label.image = img
 
 def audio_fn():
-    threshold = 4000
+    threshold = 3000
     res = get_audio(threshold)
     heard.set(f"Heard : {res}")
     val = data.get_anime_data(res)

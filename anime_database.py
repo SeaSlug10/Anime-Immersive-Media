@@ -27,4 +27,4 @@ class AnimeData:
 
 if __name__ == "__main__":
     data = AnimeData()
-    print(data.get_anime_image("spy family"))
+    print(data.set_anime_image("spy family"))
