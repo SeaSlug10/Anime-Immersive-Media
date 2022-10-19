@@ -1,0 +1,7 @@
+pip install AnilistPython==0.1.3
+Pillow
+requests
+pip install playsound
+pip install SpeechRecognition
+gTTS
+tkinter
