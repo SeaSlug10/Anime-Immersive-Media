@@ -13,18 +13,20 @@ class AnimeData:
 
     def set_anime_image(self, anime):
         anime_data = self.data.get_anime(anime)
-        # Send GET request
-        url = anime_data['cover_image']
-        headers = {'User-agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers)
-        file_name = "cover_img.jpg"
-        # Save the image
-        if response.status_code == 200:
-            with open(file_name, "wb") as f:
-                f.write(response.content)
-        else:
-            print(response.status_code)
+        for data, filename in [('cover_image', "cover_img.jpg"), ('banner_image', "banner_img.jpg")]:
+            # Send GET request
+            url = anime_data[data]
+            if url != None:
+                headers = {'User-agent': 'Mozilla/5.0'}
+                response = requests.get(url, headers=headers)
+                file_name = filename
+                # Save the image
+                if response.status_code == 200:
+                    with open(file_name, "wb") as f:
+                        f.write(response.content)
+                else:
+                    print(response.status_code)
 
 if __name__ == "__main__":
     data = AnimeData()
-    print(data.set_anime_image("spy family"))
+    print(data.get_anime_data("itadaki seiki"))

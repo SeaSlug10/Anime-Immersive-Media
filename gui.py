@@ -14,22 +14,34 @@ root.rowconfigure(0, weight=1)
 
 title = StringVar()
 title.set("anime title / japanese title")
-ttk.Label(mainframe, textvariable=title).grid(column=0, row=1, sticky=(W))
+ttk.Label(mainframe, textvariable=title).grid(column=0, row=2)
 
 heard = StringVar()
 heard.set("Heard : ")
-ttk.Label(mainframe, textvariable=heard).grid(column=1, row=2, sticky=(E))
+ttk.Label(mainframe, textvariable=heard).grid(column=0, row=4)
 
 data = AnimeData()
 
 cover_label = Label(mainframe)
-cover_label.grid(column=0, row=0, sticky=(E))
+cover_label.grid(column=0, row=1)
+
+banner_label = Label(mainframe)
+banner_label.grid(column=0, row=0)
 
 def update_img():
     img = Image.open('cover_img.jpg')
+    ratio = img.size[0]/img.size[1]
+    img = img.resize((500, int(500/ratio)), Image.ANTIALIAS)
     img = ImageTk.PhotoImage(img)
     cover_label.configure(image=img)
     cover_label.image = img
+
+    img = Image.open('banner_img.jpg')
+    ratio = img.size[0]/img.size[1]
+    img = img.resize((500, int(500/ratio)), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(img)
+    banner_label.configure(image = img)
+    banner_label.image = img
 
 def audio_fn():
     threshold = 3000
@@ -40,6 +52,6 @@ def audio_fn():
     update_img()
     title.set(f"{val['name_english']} / {val['name_romaji']}")
 
-ttk.Button(mainframe, text="listen", command=audio_fn).grid(column=1, row=1, sticky=(W, E))
+ttk.Button(mainframe, text="listen", command=audio_fn).grid(column=0, row=3)
 
 root.mainloop()
