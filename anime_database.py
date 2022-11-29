@@ -9,7 +9,10 @@ class AnimeData:
         self.data = Anilist()
 
     def get_anime_data(self, word):
-        return self.data.get_anime(word)
+        try:
+            return self.data.get_anime(word)
+        except:
+            return None
 
     def set_anime_image(self, anime):
         anime_data = self.data.get_anime(anime)
