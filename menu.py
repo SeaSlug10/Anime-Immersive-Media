@@ -1,14 +1,36 @@
 from tkinter import *
 from tkinter import ttk
-
+import tkinter as tk
+import os
 
 class Song:
 
-    def __init__(self, path):
+    def __init__(self, path, name):
         self.path = path
+        self.name = name[:name.index("-")]
+        self.completed = False
+        self.attempted = False
 
-    def play(self):
-        print(f"Now playing {self.path}")
+    def play(self, app, prev):
+        self.attempted = True
+        app.clear_frame()
+        ttk.Button(app.mainframe, text="Back", command=lambda: self.back(app, prev)).grid(row=0, column=0)
+        ttk.Label(app.mainframe, text="Guess: ").grid(row=1, column=0)
+        self.entry = ttk.Entry(app.mainframe)
+        self.entry.grid(row=1, column=1)
+        ttk.Button(app.mainframe, text="Enter", command = lambda:self.check_guess(app, prev)).grid(column=1, row=2)
+        print(f"Now playing {self.name}")
+
+    def check_guess(self, app, prev):
+        if self.entry.get().lower() == self.name.lower():
+            self.completed=True
+            self.back(app, prev)
+
+    def back(self, app, prev):
+        prev.display_difficulty(app)
+
+    def __str__(self):
+        return self.name
 
 class SongDifficulty:
 
@@ -21,12 +43,15 @@ class SongDifficulty:
         ttk.Button(app.mainframe, text="Back", command = app.main_menu).grid(column=0, row=0)
         ttk.Label(app.mainframe, text="Select a song").grid(column=0, row=1)
         for i in range(len(self.songs)):
-            ttk.Button(app.mainframe, text=f"Song {i+1}", 
-            command=lambda i=i: self.play_song(i)).grid(column=0, row=i+2)
+            buttonColor = lambda song: "light green" if song.completed else "light gray" if song.attempted else "white"
+            tk.Button(app.mainframe, text=f"{self.songs[i].name}", 
+            command=lambda i=i: self.play_song(i, app), bg=buttonColor(self.songs[i])).grid(column=0, row=i+2)
         
+    def play_song(self, index, app):
+        self.songs[index].play(app, self)
     
-    def play_song(self, index):
-        self.songs[index].play()
+    def __str__(self):
+        return "self.name :".join(["\n"+str(s) for s in self.songs])
 
 class AnimeApp:
 
@@ -55,18 +80,28 @@ class AnimeApp:
 
         self.root.mainloop()
     
-
-    
     def clear_frame(self):
         for widget in self.mainframe.winfo_children():
             widget.destroy()
 
     def show_songs(self, index):
         self.difficulties[index].display_difficulty(self)
-
     
+    def __str__(self):
+        return "".join([str(s)+"\n" for s in self.difficulties])
+
+def load_app():
+    difficulties = []
+    for difficulty in os.listdir("songs"):
+        songs = []
+        dir = os.path.join("songs", difficulty)
+        for song in os.listdir(dir):
+            with open(os.path.join(dir, song)) as s:
+                songs.append(Song(s, song))
+        difficulties.append(SongDifficulty(songs, difficulty))
+    return AnimeApp(difficulties)
+
 if __name__ == '__main__':
-    hard_songs = SongDifficulty([Song("this"), Song("that")], "hard")
-    easy_songs = SongDifficulty([Song("the"), Song("other")], "easy")
-    mainApp = AnimeApp([hard_songs, easy_songs])
+    mainApp = load_app()
+
     mainApp.main_menu()

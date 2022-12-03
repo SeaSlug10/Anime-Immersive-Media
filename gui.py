@@ -4,6 +4,9 @@ from anime_database import AnimeData
 from interact import get_audio
 from PIL import ImageTk, Image
 
+class SongGuesser:
+    def __init__(self, file):
+        pass
 root = Tk()
 root.title("Anime Immersion")
 
