@@ -2,10 +2,12 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 import os
+from anime_database import AnimeData as db
 
 class Song:
 
     def __init__(self, path, name):
+        self.db = db()
         self.path = path
         self.name = name[:name.index("-")]
         self.completed = False
@@ -22,7 +24,9 @@ class Song:
         print(f"Now playing {self.name}")
 
     def check_guess(self, app, prev):
-        if self.entry.get().lower() == self.name.lower():
+        entered = self.db.get_anime_data(self.entry.get())["name_english"]
+        actual = self.db.get_anime_data(self.name)["name_english"]
+        if entered == actual:
             self.completed=True
             self.back(app, prev)
 
@@ -102,6 +106,7 @@ def load_app():
     return AnimeApp(difficulties)
 
 if __name__ == '__main__':
+
     mainApp = load_app()
 
     mainApp.main_menu()
