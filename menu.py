@@ -3,6 +3,8 @@ from tkinter import ttk
 import tkinter as tk
 import os
 from anime_database import AnimeData as db
+import random as rand
+import time
 
 class Song:
 
@@ -18,10 +20,10 @@ class Song:
         app.clear_frame()
         ttk.Button(app.mainframe, text="Back", command=lambda: self.back(app, prev)).grid(row=0, column=0)
         ttk.Label(app.mainframe, text="Guess: ").grid(row=1, column=0)
-        self.entry = ttk.Entry(app.mainframe)
+        self.entry = tk.Entry(app.mainframe, width=10, font=("Helvetica", 20))
         self.entry.grid(row=1, column=1)
         ttk.Button(app.mainframe, text="Enter", command = lambda:self.check_guess(app, prev)).grid(column=1, row=2)
-        print(f"Now playing {self.name}")
+        print(f"Now playing {str(self)}")
 
     def check_guess(self, app, prev):
         entered = self.db.get_anime_data(self.entry.get())["name_english"]
@@ -29,12 +31,15 @@ class Song:
         if entered == actual:
             self.completed=True
             self.back(app, prev)
+        else:
+            self.entry.configure(bg="#ff9090")
+            app.root.after(500, lambda: self.entry.configure(bg='white'))
 
     def back(self, app, prev):
         prev.display_difficulty(app)
 
     def __str__(self):
-        return self.name
+        return f"{self.name}, attempted: {self.attempted}, completed: {self.completed}"
 
 class SongDifficulty:
 
@@ -45,15 +50,21 @@ class SongDifficulty:
     def display_difficulty(self, app):
         app.clear_frame()
         ttk.Button(app.mainframe, text="Back", command = app.main_menu).grid(column=0, row=0)
+        ttk.Button(app.mainframe, text="Random", command = lambda : self.play_random(app)).grid(column=1, row=0)
         ttk.Label(app.mainframe, text="Select a song").grid(column=0, row=1)
         for i in range(len(self.songs)):
-            buttonColor = lambda song: "light green" if song.completed else "light gray" if song.attempted else "white"
-            tk.Button(app.mainframe, text=f"{self.songs[i].name}", 
-            command=lambda i=i: self.play_song(i, app), bg=buttonColor(self.songs[i])).grid(column=0, row=i+2)
+            buttonColor = lambda song: "light green" if song.completed else "#909090" if song.attempted else "white"
+            buttonLabel = lambda i: f"Song {i+1} - {self.songs[i].name}" if self.songs[i].completed else f"Song {i+1}"
+            tk.Button(app.mainframe, text=buttonLabel(i), 
+            command=lambda i=i: self.play_song(i, app), bg=buttonColor(self.songs[i]), width=20, font=('Helvetica',20)).grid(column=i%2, row=int(i/2)+2)
         
     def play_song(self, index, app):
         self.songs[index].play(app, self)
     
+    def play_random(self, app):
+        incomplete = [song for song in self.songs if not song.completed]
+        incomplete[rand.randint(0, len(incomplete)-1)].play(app, self)
+
     def __str__(self):
         return "self.name :".join(["\n"+str(s) for s in self.songs])
 
@@ -62,10 +73,12 @@ class AnimeApp:
     def __init__(self, difficulties):
         self.difficulties = difficulties
         self.root = Tk()
-        
+        self.root.config(bg="#101020")
         s = ttk.Style()
-        s.configure("My.TFrame", bg="black", fg="white")
-        self.mainframe = ttk.Frame(self.root, padding="3 3 12 12", style="My.TFrame")
+        s.configure('TButton', height=10, width=20, foreground="black")
+        s.configure('TEntry', height=10, width=20, foreground="black")
+        s.configure('.', font=('Helvetica', 20), background="#101020", foreground="white")
+        self.mainframe = ttk.Frame(self.root, padding="3 3 12 12")
         self.mainframe.grid(columnspan=2)
         self.mainframe.config()
 
