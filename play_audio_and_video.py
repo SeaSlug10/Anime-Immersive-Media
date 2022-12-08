@@ -11,7 +11,7 @@ def play_audio_video(curr_path, iteration, name, unblurred=False):
     if not unblurred:
         blur_val, brightness_val, turn_length = 501-(100*iteration), 0+(40*iteration), 83*(2**iteration)
     else:
-        blur_val, brightness_val, turn_length = 1, 200, 83*(2**2)
+        blur_val, brightness_val, turn_length = 1, 200, 83*(6)
 
     video = cv2.VideoCapture(curr_path)
     p = Process(target=playsound, args=(f"audio_clips/{name}.mp3",))
@@ -24,7 +24,7 @@ def play_audio_video(curr_path, iteration, name, unblurred=False):
 
     p.start()
     # little delay because multiprocessing module takes half a second to actually play audio
-    time.sleep(0.5)
+    time.sleep(5)
     for _ in range(turn_length):
         ret, frame = video.read()
         if ret == True:
