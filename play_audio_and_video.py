@@ -5,6 +5,7 @@ import time
 import os
 import sys
 from moviepy.editor import VideoFileClip
+import ctypes
 
 def play_audio_video(curr_path, iteration, name, unblurred=False):
     # path to files, then concat with file names
@@ -24,10 +25,13 @@ def play_audio_video(curr_path, iteration, name, unblurred=False):
 
     p.start()
     # little delay because multiprocessing module takes half a second to actually play audio
-    time.sleep(5)
+    time.sleep(3.5)
     for _ in range(turn_length):
         ret, frame = video.read()
         if ret == True:
+            user32 = ctypes.windll.user32
+            screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1) 
+            frame = cv2.resize(frame, screensize)
             frame = cv2.blur(frame, (blur_val, blur_val))
             frame = cv2.normalize(frame, frame, brightness_val, 0, cv2.NORM_MINMAX)
 
@@ -51,4 +55,4 @@ def convert_video_to_audio_moviepy(video_file, name, output_ext="mp3"):
 
 
 if __name__ == '__main__':
-    play_audio_video('songs\Easy\Attack on Titan-Guren no Yumiya.mp4', 1, "aot")
+    play_audio_video('songs\Medium\Hunter X Hunter - Departure!.mp4', 1, "hxh", True)
