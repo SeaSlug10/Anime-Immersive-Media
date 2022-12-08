@@ -25,14 +25,17 @@ class Song:
         self.attempt_label = ttk.Label(app.mainframe, text=f"Attempts: {self.attempts}")
         self.attempt_label.grid(row=1, column=0)
         ttk.Button(app.mainframe, text="Play current clue", command=lambda : self.play_clue(app, prev)).grid(row=4, column=1)
-        ttk.Button(app.mainframe, text="Skip to next clue", command=lambda : self.skip()).grid(row=3, column=0)
+        ttk.Button(app.mainframe, text="Skip to next clue", command=lambda : self.skip(app, prev)).grid(row=3, column=0)
         self.entry = tk.Entry(app.mainframe, width=15, font=("Helvetica", 20))
         self.entry.grid(row=2, column=1)
         ttk.Button(app.mainframe, text="Enter", 
         command = lambda:self.check_guess(app, prev)).grid(column=1, row=3)
 
-    def skip(self):
+    def skip(self, app, prev):
         self.attempts += 1
+        if self.attempts == self.max_attempts:
+            play_audio_video(self.path.name, self.attempts, self.songname, unblurred=True)
+            self.back(app, prev)
         self.attempt_label.configure(text=f"Attempts: {self.attempts}")
 
     def play_clue(self, app, prev):
@@ -49,12 +52,14 @@ class Song:
         self.attempts += 1
         if entered == actual:
             self.completed=True
+            play_audio_video(self.path.name, self.attempts, self.songname, unblurred=True)
             self.back(app, prev)
         else:
             self.entry.configure(bg="#ff9090")
             app.root.after(500, lambda: self.entry.configure(bg='white'))
         self.attempt_label.configure(text=f"Attempts: {self.attempts}")
         if self.attempts == self.max_attempts:
+            play_audio_video(self.path.name, self.attempts, self.songname, unblurred=True)
             self.back(app, prev)
 
     def back(self, app, prev):

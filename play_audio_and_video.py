@@ -6,9 +6,12 @@ import os
 import sys
 from moviepy.editor import VideoFileClip
 
-def play_audio_video(curr_path, iteration, name):
+def play_audio_video(curr_path, iteration, name, unblurred=False):
     # path to files, then concat with file names
-    blur_val, brightness_val, turn_length = 501-(100*iteration), 0+(40*iteration), 83*(2**iteration)
+    if not unblurred:
+        blur_val, brightness_val, turn_length = 501-(100*iteration), 0+(40*iteration), 83*(2**iteration)
+    else:
+        blur_val, brightness_val, turn_length = 1, 200, 83*(2**2)
 
     video = cv2.VideoCapture(curr_path)
     p = Process(target=playsound, args=(f"audio_clips/{name}.mp3",))
@@ -21,7 +24,7 @@ def play_audio_video(curr_path, iteration, name):
 
     p.start()
     # little delay because multiprocessing module takes half a second to actually play audio
-    #time.sleep(0.5)
+    time.sleep(0.5)
     for _ in range(turn_length):
         ret, frame = video.read()
         if ret == True:
@@ -33,7 +36,7 @@ def play_audio_video(curr_path, iteration, name):
                 break
         else:
             break
-
+        time.sleep(0.01)
     # terminate the process for audio and destroy video window
     p.terminate()
     video.release()
