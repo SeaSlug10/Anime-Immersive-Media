@@ -13,19 +13,26 @@ class Song:
         self.path = path
         self.name = name[:name.index("-")]
         self.completed = False
-        self.attempted = False
+        self.attempts = 0
+        self.max_attempts = 5
 
     def play(self, app, prev):
-        self.attempted = True
         app.clear_frame()
         ttk.Button(app.mainframe, text="Back", command=lambda: self.back(app, prev)).grid(row=0, column=0)
-        ttk.Label(app.mainframe, text="Guess: ").grid(row=1, column=0)
+        ttk.Label(app.mainframe, text="Guess: ").grid(row=2, column=0)
+        self.attempt_label = ttk.Label(app.mainframe, text=f"Attempts: {self.attempts}")
+        self.attempt_label.grid(row=1, column=0)
+        ttk.Button(app.mainframe, text="Play next clue", command=lambda : self.play_next(app, prev)).grid(row=4, column=1)
         self.entry = tk.Entry(app.mainframe, width=10, font=("Helvetica", 20))
-        self.entry.grid(row=1, column=1)
-        ttk.Button(app.mainframe, text="Enter", command = lambda:self.check_guess(app, prev)).grid(column=1, row=2)
+        self.entry.grid(row=2, column=1)
+        ttk.Button(app.mainframe, text="Enter", 
+        command = lambda:self.check_guess(app, prev)).grid(column=1, row=3)
+        
+    def play_next(self, app, prev):
         print(f"Now playing {str(self)}")
 
     def check_guess(self, app, prev):
+        self.attempts += 1
         entered = self.db.get_anime_data(self.entry.get())["name_english"]
         actual = self.db.get_anime_data(self.name)["name_english"]
         if entered == actual:
@@ -34,12 +41,15 @@ class Song:
         else:
             self.entry.configure(bg="#ff9090")
             app.root.after(500, lambda: self.entry.configure(bg='white'))
+        self.attempt_label.configure(text=f"Attempts: {self.attempts}")
+        if self.attempts == self.max_attempts:
+            self.back(app, prev)
 
     def back(self, app, prev):
         prev.display_difficulty(app)
 
     def __str__(self):
-        return f"{self.name}, attempted: {self.attempted}, completed: {self.completed}"
+        return f"{self.name}, attempts: {self.attempts}, completed: {self.completed}"
 
 class SongDifficulty:
 
@@ -53,10 +63,15 @@ class SongDifficulty:
         ttk.Button(app.mainframe, text="Random", command = lambda : self.play_random(app)).grid(column=1, row=0)
         ttk.Label(app.mainframe, text="Select a song").grid(column=0, row=1)
         for i in range(len(self.songs)):
-            buttonColor = lambda song: "light green" if song.completed else "#909090" if song.attempted else "white"
-            buttonLabel = lambda i: f"Song {i+1} - {self.songs[i].name}" if self.songs[i].completed else f"Song {i+1}"
+            song = self.songs[i]
+            buttonColor = lambda song: "light green" if song.completed else "red" if song.attempts == song.max_attempts else "gray" if song.attempts > 0 else "white"
+            buttonLabel = lambda i: f"Song {i+1} - {song.name}" if song.completed or song.attempts == song.max_attempts else f"Song {i+1}"
+            doNothingFunc = lambda : None
+            playSongFunc = lambda i=i: self.play_song(i, app)
+            buttonFunc = doNothingFunc if song.attempts == song.max_attempts or song.completed else playSongFunc
             tk.Button(app.mainframe, text=buttonLabel(i), 
-            command=lambda i=i: self.play_song(i, app), bg=buttonColor(self.songs[i]), width=20, font=('Helvetica',20)).grid(column=i%2, row=int(i/2)+2)
+            command=buttonFunc, bg=buttonColor(song), width=20,
+            font=('Helvetica',16)).grid(column=i%2, row=int(i/2)+2)
         
     def play_song(self, index, app):
         self.songs[index].play(app, self)
