@@ -94,7 +94,7 @@ class SongDifficulty:
         self.songs[index].play(app, self)
     
     def play_random(self, app):
-        incomplete = [song for song in self.songs if song.completed == False or song.attempts < song.max_attempts]
+        incomplete = [song for song in self.songs if song.completed == False and song.attempts < song.max_attempts]
         incomplete[rand.randint(0, len(incomplete)-1)].play(app, self)
 
     def __str__(self):
