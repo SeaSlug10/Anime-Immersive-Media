@@ -5,6 +5,7 @@ import os
 from anime_database import AnimeData as db
 import random as rand
 import time
+from play_audio_and_video import play_audio_video
 
 class Song:
 
@@ -12,6 +13,7 @@ class Song:
         self.db = db()
         self.path = path
         self.name = name[:name.index("-")]
+        self.songname = name[name.index("-"):name.index(".")]
         self.completed = False
         self.attempts = 0
         self.max_attempts = 5
@@ -22,19 +24,29 @@ class Song:
         ttk.Label(app.mainframe, text="Guess: ").grid(row=2, column=0)
         self.attempt_label = ttk.Label(app.mainframe, text=f"Attempts: {self.attempts}")
         self.attempt_label.grid(row=1, column=0)
-        ttk.Button(app.mainframe, text="Play next clue", command=lambda : self.play_next(app, prev)).grid(row=4, column=1)
-        self.entry = tk.Entry(app.mainframe, width=10, font=("Helvetica", 20))
+        ttk.Button(app.mainframe, text="Play current clue", command=lambda : self.play_clue(app, prev)).grid(row=4, column=1)
+        ttk.Button(app.mainframe, text="Skip to next clue", command=lambda : self.skip()).grid(row=3, column=0)
+        self.entry = tk.Entry(app.mainframe, width=15, font=("Helvetica", 20))
         self.entry.grid(row=2, column=1)
         ttk.Button(app.mainframe, text="Enter", 
         command = lambda:self.check_guess(app, prev)).grid(column=1, row=3)
-        
-    def play_next(self, app, prev):
+
+    def skip(self):
+        self.attempts += 1
+        self.attempt_label.configure(text=f"Attempts: {self.attempts}")
+
+    def play_clue(self, app, prev):
         print(f"Now playing {str(self)}")
+        play_audio_video(self.path.name, self.attempts, self.songname)
+        
 
     def check_guess(self, app, prev):
+        try:
+            entered = self.db.get_anime_data(self.entry.get())["name_english"]
+            actual = self.db.get_anime_data(self.name)["name_english"]
+        except:
+            return
         self.attempts += 1
-        entered = self.db.get_anime_data(self.entry.get())["name_english"]
-        actual = self.db.get_anime_data(self.name)["name_english"]
         if entered == actual:
             self.completed=True
             self.back(app, prev)
@@ -70,7 +82,7 @@ class SongDifficulty:
             playSongFunc = lambda i=i: self.play_song(i, app)
             buttonFunc = doNothingFunc if song.attempts == song.max_attempts or song.completed else playSongFunc
             tk.Button(app.mainframe, text=buttonLabel(i), 
-            command=buttonFunc, bg=buttonColor(song), width=20,
+            command=buttonFunc, bg=buttonColor(song), width=25,
             font=('Helvetica',16)).grid(column=i%2, row=int(i/2)+2)
         
     def play_song(self, index, app):
