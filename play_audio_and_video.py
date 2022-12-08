@@ -24,7 +24,7 @@ def play_audio_video(curr_path, iteration, name, unblurred=False):
 
     p.start()
     # little delay because multiprocessing module takes half a second to actually play audio
-    time.sleep(0.5)
+    time.sleep(5)
     for _ in range(turn_length):
         ret, frame = video.read()
         if ret == True:
